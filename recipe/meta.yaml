@@ -10,7 +10,7 @@ source:
   sha256: 731a90c9836b77fffe7c3fa0477ef2d3b6fa91252ddc0bb4d32dadd4fcc143d4
 
 build:
-  skip: true  # [py<310]
+  skip: true  # [py<38]
   script: {{ PYTHON }} -m pip install --no-deps . -vv --no-build-isolation
   number: 0
 
@@ -25,30 +25,35 @@ requirements:
     - docstring_parser >=0.15
     - typing-extensions >=4.13.0
     - eval-type-backport >=0.1.3  # [py<310]
-  run_constrained:
-    - PyYAML >=6.0
-    - pytest >=7.1.2
-    - pytest-cov >=3.0.0
-    - pytest-xdist >=3.5.0
-    - omegaconf >=2.2.2
-    - attrs >=21.4.0
-    - pyright >=1.1.349,!=1.1.379
-    - mypy >=1.4.1
-    - pydantic >=2.5.2,!=2.10.0
-    - coverage[toml] >=6.5.0
-    - eval_type_backport >=0.1.3
-    - ml_collections >=0.1.0
-    - msgspec >=0.18.6
-    - shtab >=1.5.6
-    - universal-pathlib >=0.2.0
 
 test:
   imports:
     - tyro
-  commands:
-    - pip check
+  source_files:
+    - tests
   requires:
     - pip
+    - pytest >=7.1.2,<9.0.0
+    - pyyaml >=6.0
+    - attrs >=21.4.0
+    - pydantic >=2.5.2,!=2.10.0
+    - msgspec >=0.18.6
+  commands:
+    - pip check
+    # omegaconf, ml-collections, shtab, and universal-pathlib are not on pkgs/main.
+    - >
+      pytest tests -vv --backend=tyro
+      --ignore=tests/test_ml_collections.py
+      --ignore=tests/test_unsupported_but_should_work.py
+      --ignore=tests/test_completion_bash.py
+      --ignore=tests/test_completion_spec.py
+      --ignore=tests/test_completion_zsh.py
+      --ignore=tests/test_py311_generated/test_ml_collections_generated.py
+      --ignore=tests/test_py311_generated/test_unsupported_but_should_work_generated.py
+      --ignore=tests/test_py311_generated/test_completion_bash_generated.py
+      --ignore=tests/test_py311_generated/test_completion_spec_generated.py
+      --ignore=tests/test_py311_generated/test_completion_zsh_generated.py
+      -k "not upath"
 
 about:
   home: https://github.com/brentyi/tyro
